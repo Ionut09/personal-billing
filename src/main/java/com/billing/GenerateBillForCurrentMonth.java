@@ -25,6 +25,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.threeten.extra.Temporals;
 
 import java.awt.Desktop;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -43,6 +44,7 @@ import java.util.logging.Logger;
 import lombok.SneakyThrows;
 
 import static com.billing.BigDecimalUtils.format;
+import static com.spire.xls.FileFormat.PDF;
 import static java.lang.Integer.parseInt;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.valueOf;
@@ -57,7 +59,9 @@ public class GenerateBillForCurrentMonth {
 
     public static String bilXlsxPath = "/home/ionut/Documents/%s/Facturi/Arnia/Factura.xlsx";
 
-    public static String generatedFolderPath = "/home/ionut/Documents/%s/Facturi/Arnia/Facturi_generate";
+    public static String generatedBillsPath = "/home/ionut/Documents/%s/Facturi/Arnia/Facturi_generate";
+
+    public static String generatedReportsPath = "/home/ionut/Documents/%s/Facturi/Arnia/Rapoarte_generate";
 
     public static final String GLOBAL_NUMBER_FILE = "bills_current_number_PFA.txt";
 
@@ -94,12 +98,32 @@ public class GenerateBillForCurrentMonth {
 //        var workingDays = 20;
 
         bilXlsxPath = String.format(bilXlsxPath, billingOption);
-        generatedFolderPath = String.format(generatedFolderPath, billingOption);
+        generatedBillsPath = String.format(generatedBillsPath, billingOption);
+        generatedReportsPath = String.format(generatedReportsPath, billingOption);
 
         int billNumber = generateBill(workingDays);
 
-        saveFileAsPdf(billNumber);
+        saveBillAsPdf(billNumber);
         generateReport(workingDays, billNumber);
+        saveReportAsPdf();
+    }
+
+    private static void saveReportAsPdf() throws IOException {
+        var path = Paths.get(generatedReportsPath).resolve(now().getYear() + "");
+        if (!Files.exists(path)) {
+            Files.createDirectory(path);
+        }
+        Workbook workbook = new Workbook();
+        workbook.loadFromFile(path.getParent().getParent().resolve("Raport_de_activitate.xls").toString());
+
+        //Fit to page
+        workbook.getConverterSetting().setSheetFitToPage(true);
+
+        //Save as PDF document
+        workbook.saveToFile(path.resolve("Raport_" + months.get(now().getMonthValue())+".pdf").toString(), PDF);
+        var desktop = Desktop.getDesktop();
+        desktop.open(new File(generatedReportsPath));
+        desktop.open(path.toFile());
     }
 
     private static int generateBill(int workingDays) throws IOException {
@@ -234,9 +258,9 @@ public class GenerateBillForCurrentMonth {
         throw new RuntimeException("I couldn't find the footer row");
     }
 
-    private static void saveFileAsPdf(int billNumber) throws Exception {
+    private static void saveBillAsPdf(int billNumber) throws Exception {
         var today = now().format(ofPattern("dd-MM-yyyy"));
-        var path = Paths.get(generatedFolderPath).resolve("Factura_Arnia_nr" + billNumber + "_din_" + today + ".pdf");
+        var path = Paths.get(generatedBillsPath).resolve("Factura_Arnia_nr" + billNumber + "_din_" + today + ".pdf");
 
         Workbook workbook = new Workbook();
         workbook.loadFromFile(bilXlsxPath);
@@ -245,10 +269,10 @@ public class GenerateBillForCurrentMonth {
         workbook.getConverterSetting().setSheetFitToPage(true);
 
         //Save as PDF document
-        workbook.saveToFile(path.toString(), FileFormat.PDF);
+        workbook.saveToFile(path.toString(), PDF);
         var desktop = Desktop.getDesktop();
-//        desktop.open(new File(generatedFolderPath));
-//        desktop.open(path.toFile());
+        desktop.open(new File(generatedBillsPath));
+        desktop.open(path.toFile());
     }
 
     private static int updateBillNumber(XSSFSheet sheet) {
@@ -320,7 +344,7 @@ public class GenerateBillForCurrentMonth {
     private static void navigate(String url) {
         System.setProperty("webdriver.chrome.silentOutput", "true");
         Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
-        options.addArguments("--headless");
+//        options.addArguments("--headless");
         options.addArguments("--log-level=4");
         options.addArguments("--silent");
         driver = new ChromeDriver(options);
@@ -331,7 +355,7 @@ public class GenerateBillForCurrentMonth {
         driver.manage().window().maximize();
         js.executeScript("window.scrollBy(0,1000)");
 
-//        Thread.sleep(2000);
+        Thread.sleep(2000);
     }
 
 

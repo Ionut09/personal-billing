@@ -1,8 +1,10 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
-group 'org.example'
+
+group 'org'
 version '1.0'
 
 repositories {
@@ -10,6 +12,10 @@ repositories {
     flatDir {
         dirs 'libs'
     }
+}
+
+application {
+    mainClass = 'com.billing.GenerateBillForCurrentMonth'
 }
 
 dependencies {

@@ -20,7 +20,6 @@ import static java.time.DayOfWeek.SATURDAY;
 import static java.time.DayOfWeek.SUNDAY;
 import static java.time.LocalDate.now;
 
-@Generated
 public abstract class BigDecimalUtils {
 
     /**
