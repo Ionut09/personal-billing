@@ -1,6 +1,5 @@
 package com.billing;
 
-import com.spire.xls.FileFormat;
 import com.spire.xls.Workbook;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -24,7 +23,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.threeten.extra.Temporals;
 
-import java.awt.Desktop;
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -44,6 +43,7 @@ import java.util.logging.Logger;
 import lombok.SneakyThrows;
 
 import static com.billing.BigDecimalUtils.format;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.spire.xls.FileFormat.PDF;
 import static java.lang.Integer.parseInt;
 import static java.math.BigDecimal.ONE;
@@ -53,9 +53,14 @@ import static java.time.LocalDate.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Map.entry;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.poi.ss.usermodel.BorderStyle.THIN;
 import static org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND;
+import static org.apache.poi.ss.usermodel.IndexedColors.BLACK;
+import static org.apache.poi.ss.usermodel.IndexedColors.LIGHT_CORNFLOWER_BLUE;
 
 public class GenerateBillForCurrentMonth {
+
+    public static final String RAPORT_DE_ACTIVITATE = "Raport_de_activitate.xls";
 
     public static String bilXlsxPath = "/home/ionut/Documents/%s/Facturi/Arnia/Factura.xlsx";
 
@@ -63,7 +68,7 @@ public class GenerateBillForCurrentMonth {
 
     public static String generatedReportsPath = "/home/ionut/Documents/%s/Facturi/Arnia/Rapoarte_generate";
 
-    public static final String GLOBAL_NUMBER_FILE = "bills_current_number_PFA.txt";
+    public static String GLOBAL_NUMBER_FILE = "bills_current_number_%s.txt";
 
     public static final BigDecimal DAILY_RATE = BigDecimal.valueOf(300);
 
@@ -89,17 +94,18 @@ public class GenerateBillForCurrentMonth {
     );
 
     public static void main(String... args) throws Exception {
-        System.out.println("Welcome to the most advanced billing generator!");
-//                "Please enter the billing option or enter for default PFA: (PFA/SRL)");
-//        var trim = scanner.nextLine().trim();
-        var billingOption = "PFA";
+        System.out.println("Welcome to the most advanced billing generator!\n" +
+                "Please enter the billing option or enter for default PFA: (PFA/SRL)");
+        var rawOption = scanner.nextLine().trim();
+        var billingOption = isNullOrEmpty(rawOption) ? "PFA" : rawOption;
+
         System.out.println("Please enter the number of working days:");
         var workingDays = scanner.nextInt();
-//        var workingDays = 20;
 
         bilXlsxPath = String.format(bilXlsxPath, billingOption);
         generatedBillsPath = String.format(generatedBillsPath, billingOption);
         generatedReportsPath = String.format(generatedReportsPath, billingOption);
+        GLOBAL_NUMBER_FILE = String.format(GLOBAL_NUMBER_FILE, billingOption);
 
         int billNumber = generateBill(workingDays);
 
@@ -114,15 +120,15 @@ public class GenerateBillForCurrentMonth {
             Files.createDirectory(path);
         }
         Workbook workbook = new Workbook();
-        workbook.loadFromFile(path.getParent().getParent().resolve("Raport_de_activitate.xls").toString());
+        workbook.loadFromFile(path.getParent().getParent().resolve(RAPORT_DE_ACTIVITATE).toString());
 
         //Fit to page
         workbook.getConverterSetting().setSheetFitToPage(true);
 
         //Save as PDF document
-        workbook.saveToFile(path.resolve("Raport_" + months.get(now().getMonthValue())+".pdf").toString(), PDF);
+        workbook.saveToFile(path.resolve("Raport-" + months.get(now().getMonthValue()) + "-" + now().getYear() + ".pdf").toString(), PDF);
         var desktop = Desktop.getDesktop();
-        desktop.open(new File(generatedReportsPath));
+        desktop.open(new File(path.toString()));
         desktop.open(path.toFile());
     }
 
@@ -169,9 +175,6 @@ public class GenerateBillForCurrentMonth {
         FileOutputStream output = new FileOutputStream(raportPath);
         workbook.write(output);
         output.close();
-
-        var desktop = Desktop.getDesktop();
-        desktop.open(raportPath);
     }
 
     private static void updateTotalDays(int footerRowIndex, Sheet sheet, int workingDays) {
@@ -227,17 +230,17 @@ public class GenerateBillForCurrentMonth {
     private static CellStyle getCellStyle(org.apache.poi.ss.usermodel.Workbook workbook) {
         CellStyle backgroundStyle = workbook.createCellStyle();
 
-        backgroundStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+        backgroundStyle.setFillForegroundColor(LIGHT_CORNFLOWER_BLUE.getIndex());
         backgroundStyle.setFillPattern(SOLID_FOREGROUND);
 
-        backgroundStyle.setBorderBottom(BorderStyle.THIN);
-        backgroundStyle.setBottomBorderColor(IndexedColors.BLACK.getIndex());
-        backgroundStyle.setBorderLeft(BorderStyle.THIN);
-        backgroundStyle.setLeftBorderColor(IndexedColors.BLACK.getIndex());
-        backgroundStyle.setBorderRight(BorderStyle.THIN);
-        backgroundStyle.setRightBorderColor(IndexedColors.BLACK.getIndex());
-        backgroundStyle.setBorderTop(BorderStyle.THIN);
-        backgroundStyle.setTopBorderColor(IndexedColors.BLACK.getIndex());
+        backgroundStyle.setBorderBottom(THIN);
+        backgroundStyle.setBottomBorderColor(BLACK.getIndex());
+        backgroundStyle.setBorderLeft(THIN);
+        backgroundStyle.setLeftBorderColor(BLACK.getIndex());
+        backgroundStyle.setBorderRight(THIN);
+        backgroundStyle.setRightBorderColor(BLACK.getIndex());
+        backgroundStyle.setBorderTop(THIN);
+        backgroundStyle.setTopBorderColor(BLACK.getIndex());
         backgroundStyle.setAlignment(HorizontalAlignment.CENTER);
         backgroundStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         return backgroundStyle;
@@ -355,7 +358,7 @@ public class GenerateBillForCurrentMonth {
         driver.manage().window().maximize();
         js.executeScript("window.scrollBy(0,1000)");
 
-        Thread.sleep(2000);
+        Thread.sleep(4000);
     }
 
 
