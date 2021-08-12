@@ -62,11 +62,11 @@ public class GenerateBillForCurrentMonth {
 
     public static final String RAPORT_DE_ACTIVITATE = "Raport_de_activitate.xls";
 
-    public static String bilXlsxPath = "/home/ionut/Documents/%s/Facturi/Arnia/Factura.xlsx";
+    public static String bilXlsxPath = "/Users/ionut/Documents/%s/Facturi/Arnia/Factura.xlsx";
 
-    public static String generatedBillsPath = "/home/ionut/Documents/%s/Facturi/Arnia/Facturi_generate";
+    public static String generatedBillsPath = "/Users/ionut/Documents/%s/Facturi/Arnia/Facturi_generate";
 
-    public static String generatedReportsPath = "/home/ionut/Documents/%s/Facturi/Arnia/Rapoarte_generate";
+    public static String generatedReportsPath = "/Users/ionut/Documents/%s/Facturi/Arnia/Rapoarte_generate";
 
     public static String GLOBAL_NUMBER_FILE = "bills_current_number_%s.txt";
 
@@ -77,6 +77,7 @@ public class GenerateBillForCurrentMonth {
     private static ChromeOptions options = new ChromeOptions();
 
     private static Scanner scanner = new Scanner(System.in);
+
 
     public static final Map<Integer, String> months = Map.ofEntries(
             entry(1, "Ianuarie"),
