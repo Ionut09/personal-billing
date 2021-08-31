@@ -98,7 +98,7 @@ public class GenerateBillForCurrentMonth {
         System.out.println("Welcome to the most advanced billing generator!\n" +
                 "Please enter the billing option or enter for default PFA: (PFA/SRL)");
         var rawOption = scanner.nextLine().trim();
-        var billingOption = isNullOrEmpty(rawOption) ? "PFA" : rawOption;
+        var billingOption = isNullOrEmpty(rawOption) ? "PFA" : rawOption.toUpperCase();
 
         System.out.println("Please enter the number of working days:");
         var workingDays = scanner.nextInt();
@@ -298,7 +298,7 @@ public class GenerateBillForCurrentMonth {
         Cell exchangeCell = sheet.getRow(15).getCell(1);//B16
         var currentExchange = getCurrentExchange();
         exchangeCell.setCellValue(format(new BigDecimal(currentExchange), 4));
-        driver.close();
+        if (driver != null) driver.close();
         return new BigDecimal(currentExchange);
 
     }
